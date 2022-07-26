@@ -1,21 +1,30 @@
+/*
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=optleaf
+DB_USERNAME=root
+DB_PASSWORD=root
+
+*/
+
 package mysql
 
-
 import (
-    "testing"
+	"testing"
 )
 
-
 func TestCreateDsn(t *testing.T) {
-    testCases := [...] string {
-        "root:@tcp(0.0.0.0:3306)/mysql?parseTime=true",
-    }
+	testCases := [...]string{
+		"root:root@tcp(127.0.0.1:3306)/optleaf?parseTime=true",
+	}
 
-    for i := 0; i < len(testCases); i++ {
-        val := testCases[i]
-        result := createDsn()
-        if(result != val) {
-            t.Errorf("createDsn() = \"%v\", want %v", result, val)
-        }
-    }
+	for i := 0; i < len(testCases); i++ {
+		val := testCases[i]
+		result := createDsn()
+		if result != val {
+			t.Errorf("createDsn() = \"%v\", want %v", result, val)
+		}
+	}
 }

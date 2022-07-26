@@ -16,38 +16,34 @@ if(err != nil){
 
 */
 
-
 package encrypt
 
-
 import (
-    "unsafe"
-    "golang.org/x/crypto/bcrypt"
-    "github.com/kme222yh/optleaf-server-core/env"
+	"unsafe"
+
+	"github.com/kme222yh/optleaf-server-core/env"
+	"golang.org/x/crypto/bcrypt"
 )
 
-
-func init(){
-    var err error
-    hashCost, err = env.GetAsInt("encrypt.hashCost", "12")
-    if err != nil {
-        hashCost = 12
+func init() {
+	var err error
+	hashCost, err = env.GetAsInt("ENCRYPT_HASHCOST", "12")
+	if err != nil {
+		hashCost = 12
 	}
 }
 
-
 var (
-    hashCost int
+	hashCost int
 )
 
-
 func Hash(plainText string) (string, error) {
-    hashByte, err := bcrypt.GenerateFromPassword([]byte(plainText), hashCost)
-    hash := *(*string)(unsafe.Pointer(&hashByte))
-    return hash, err
+	hashByte, err := bcrypt.GenerateFromPassword([]byte(plainText), hashCost)
+	hash := *(*string)(unsafe.Pointer(&hashByte))
+	return hash, err
 }
 func VerifyHash(hash string, plainText string) error {
-    hashByte := []byte(hash)
-    err := bcrypt.CompareHashAndPassword(hashByte,[]byte(plainText))
-    return err
+	hashByte := []byte(hash)
+	err := bcrypt.CompareHashAndPassword(hashByte, []byte(plainText))
+	return err
 }

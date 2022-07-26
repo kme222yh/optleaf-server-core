@@ -1,95 +1,74 @@
 // テストやる時は同ディレクトリに.env作れ
 /* .env
 
-gin.mode=debug
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=optleaf
+DB_USERNAME=root
+DB_PASSWORD=root
 
-api.port=:8911
+ENCRYPT_HASHCOST=12
 
-db.user=root
-db.password=
-db.protocol=null
-db.host=127.0.0.1
-db.port=3306
-db.name=optleaf
-
-jwt.validitPeriod=30
+DB_URL=${DB_HOST}:${DB_PORT}
 
 */
 
-
 package env
 
-
 import (
-    "testing"
-    "github.com/kme222yh/optleaf-server-core/errors"
+	"testing"
+
+	"github.com/kme222yh/optleaf-server-core/errors"
 )
 
-
 func TestGet(t *testing.T) {
-    vals := [...] struct {
-        key string
-        defaultVal string
-        assumedVal string
-    } {
-        {"gin.mode",    "release",  "debug"},
-        {"gin.hage",    "",         ""},
-        {"gin.hage",    "hage",     "hage"},
-        {"db.user",     "root",     "root"},
-        {"db.user",     "user",     "root"},
-        {"db.password", "secret",   "secret"},
-        {"db.password", "",         ""},
-        {"db.protocol", "tcp",      ""},
-        {"db.protocol", "",         ""},
-    }
+	vals := [...]struct {
+		key        string
+		defaultVal string
+		assumedVal string
+	}{
+		{"DB_USERNAME", "root", "root"},
+		{"DB_USERNAME", "user", "root"},
+		{"DB_PASSWORD", "root", "root"},
+		{"DB_PASSWORD", "", "root"},
+		{"DB_PROTOCOL", "", ""},
+		{"DB_URL", "", "127.0.0.1:3306"},
+	}
 
-
-    for i := 0; i < len(vals); i++ {
-        val := vals[i]
-        result := Get(val.key, val.defaultVal)
-        if(result != val.assumedVal) {
-            t.Errorf("env.Get(\"%v\", \"%v\") = \"%v\", want %v", val.key, val.defaultVal, result, val.assumedVal)
-        }
-    }
+	for i := 0; i < len(vals); i++ {
+		val := vals[i]
+		result := Get(val.key, val.defaultVal)
+		if result != val.assumedVal {
+			t.Errorf("env.Get(\"%v\", \"%v\") = \"%v\", want %v", val.key, val.defaultVal, result, val.assumedVal)
+		}
+	}
 }
 
-
-
 func TestGetAsInt(t *testing.T) {
-    testCases := [...] struct {
-        key string
-        defaultVal string
+	testCases := [...]struct {
+		key        string
+		defaultVal string
 
-        assumedVal error
-    } {
-        {"jwt.validitPeriod",   "20",   nil},               // 数値指定
-        {"jwt.validitPeriod",   "30",   nil},
-        {"jwt.validitPeriod",   "",     nil},
-        {"jwt.validitPeriod",   "hoge", nil},
-        {"db.password",         "10",   nil},               // 未指定
-        {"db.password",         "hoge", errors.New("")},
-        {"db.password",         "",     errors.New("")},
-        {"db.user",             "10",   errors.New("")},    // 文字指定
-        {"db.user",             "",     errors.New("")},
-        {"db.user",             "hoge", errors.New("")},
-        {"db.aaaaa",            "10",   nil},               // 未定義
-        {"db.aaaaa",            "",     errors.New("")},
-        {"db.aaaaa",            "hoge", errors.New("")},
-    }
+		assumedVal error
+	}{
+		{"db.aaaaa", "10", nil}, // 未定義
+		{"db.aaaaa", "", errors.New("")},
+		{"ENCRYPT_HASHCOST", "12", nil},
+	}
 
+	for i := 0; i < len(testCases); i++ {
+		val := testCases[i]
+		_, err := GetAsInt(val.key, val.defaultVal)
 
-    for i := 0; i < len(testCases); i++ {
-        val := testCases[i]
-        _, err := GetAsInt(val.key, val.defaultVal)
-
-        if(val.assumedVal == nil){
-            if(err != nil){
-                t.Errorf("user.GetAsInt(%v, %v) = (some error), want nil", val.key, val.defaultVal)
-            }
-        } else {
-            if(err == nil){
-                t.Errorf("user.GetAsInt(%v, %v) = nil, want (some error)", val.key, val.defaultVal)
-            }
-        }
-    }
+		if val.assumedVal == nil {
+			if err != nil {
+				t.Errorf("user.GetAsInt(%v, %v) = (some error), want nil", val.key, val.defaultVal)
+			}
+		} else {
+			if err == nil {
+				t.Errorf("user.GetAsInt(%v, %v) = nil, want (some error)", val.key, val.defaultVal)
+			}
+		}
+	}
 }
